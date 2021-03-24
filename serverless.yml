@@ -13,20 +13,61 @@ plugins:
 provider:
   name: aws
   runtime: nodejs10.x
-  stage: dev
-  region: us-east-1
+  stage: prod
+  region: us-east-2
   # To load environment variables externally
   # rename env.example to .env and uncomment
   # the following line. Also, make sure to not
   # commit your .env.
   #
   environment:
-    SAMPLE_ENV_VAR: {env:SAMPLE_ENV_VAR}
+    tableName: Stocks
+
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Scan
+        - dynamodb:Query
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+        - dynamodb:DescribeTable
+      Resource: "arn:aws:dynamodb:us-east-2:*:*"  
+
 
 functions:
-  hello:
-    handler: handler.hello
+  create:
+    handler: create.main
     events:
       - http:
-          path: hello
+          path: Stocks
+          method: post
+
+  get:
+    handler: get.main
+    events:
+      - http:
+          path: Stocks/{id}
           method: get
+
+  list:
+    handler: list.main
+    events:
+      - http:
+          path: Stocks
+          method: get
+
+  update:
+    handler: update.main
+    events:
+      - http:
+          path: Stocks/{id}
+          method: put
+
+  delete:
+    handler: delete.main
+    events:
+      - http:
+          path: Stocks/{id}
+          method: delete
